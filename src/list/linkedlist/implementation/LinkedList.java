@@ -1,4 +1,5 @@
 package list.linkedlist.implementation;
+
  
 public class LinkedList {
     // 첫번째 노드를 가리키는 필드
