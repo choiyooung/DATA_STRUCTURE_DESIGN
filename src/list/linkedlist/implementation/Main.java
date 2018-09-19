@@ -1,9 +1,9 @@
 package list.linkedlist.implementation;
 
-public class Main {
+class Main {
 
 	public static void main(String[] args) {
 		LinkedList numbers = new LinkedList();
-	}
 
+}
 }
