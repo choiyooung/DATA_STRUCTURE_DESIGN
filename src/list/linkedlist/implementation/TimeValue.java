@@ -122,7 +122,7 @@ public class TimeValue {
 				e.printStackTrace();
 			}
 
-			return true; //time2값이 같거나 크면, false
+			return true; //time2값이 같거나 크면,true
 		}
 
 	}

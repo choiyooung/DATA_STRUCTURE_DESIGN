@@ -40,12 +40,13 @@ class Main {
 			while((line =bufReader.readLine())!=null)
 			{
 				String[] words = line.split("/");
-				//Link.makeInitialGraph(words);
+				Link.makeInitialGraph(words);
 				newWord = wordExists(words,startTime,endTime);
 				while((line =bufReader.readLine())!=null)
 				{
 					words = line.split("/");
 					newWord = wordExists(words,startTime,endTime);
+					Link.makeGraph(words, newWord);
 				}
 			}
 

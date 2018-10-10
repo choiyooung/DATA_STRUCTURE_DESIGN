@@ -80,7 +80,7 @@ public class LinkedList {
         if(rank == 1){
             addFirst(word,rank,initial);
         } else {
-            Node temp1 = node(rank);
+            Node temp1 = node(rank-1);
             Node temp2 = temp1.next;
             Node newNode = new Node(word,rank,initial);
             temp1.next = newNode;
@@ -90,6 +90,27 @@ public class LinkedList {
                 tail = newNode;
             }
         }
+    }
+    public void addBackword(Node preWord,int rank)
+    {
+    	Node temp = node(rank);
+    	if(temp.backward ==null) {
+    		temp.backward = preWord;
+    	}
+    	while(temp.backward !=null)
+    	{
+    		if(temp.backward.timecount >= preWord.timecount)
+    		{
+    			temp = temp.backward;
+    		}
+    		else
+    		{
+    			preWord.backward = temp.backward;
+    			temp.backward = preWord;
+    			break;
+    		}
+    	}
+    	size++;
     }
     public String toString() {
         if(head == null){
@@ -107,6 +128,9 @@ public class LinkedList {
     public Node removeFirst(){
         Node temp = head;
         temp.realtime = false;
+        temp.next =null;
+        temp.backward =null;
+        temp.changerank = null;
         head = temp.next;
         size--;
         return temp;
@@ -117,6 +141,9 @@ public class LinkedList {
         Node temp = node(rank-1);
         Node todoDeleted = temp.next;
         todoDeleted.realtime = false;
+        todoDeleted.backward = null;
+        todoDeleted.changerank = null;
+        todoDeleted.next = null;
         temp.next = temp.next.next;
         if(todoDeleted == tail){
             tail = temp;
@@ -158,35 +185,88 @@ public class LinkedList {
     public void makeGraph(String[] words, String[] newWord) {
     	Node temp = head;
     	int j = 0;
-    	while(temp == null)
+    	while(temp != null)
     	{
-    		for(int i = j; i<words.length ; i++)
+    		if(words[temp.rank - 1] != null) //words가 null인경우 이미 바뀐 경우 이므로 다음 검색어를 비교해본다.
     		{
-    			if(temp.word.equals(words[i]))
+    			for(int i = 0; i<words.length ; i++)
     			{
-    				if(temp.rank == (i+1))
-    				{
-    					temp.timecount++;
-    					break;
-    				}
-    				else
-    				{
-    					add(words[i], i+1,wordNew(words[i],newWord));
-    					Node tmep2 = remove(i+2);
-    				}
-  
-    		
-    			}else
-    			{
-    				
-    			}
-    			i++;
+	    			if(temp.word.equals(words[i])) //현 순위의 검색어가 새로 들어온 검색어에 있다면
+	    			{
+	    				if(temp.rank == (i+1))//현 순위 검색어가 똑같은 순위로 들어올경우
+	    				{
+	    					temp.timecount++;
+	    					words[i] = null;
+	    					break;
+	    				}
+	    				else // 다른 순위에 있을 경우
+	    				{
+	    					if(!words[i].equals(node(i+1).word)) //다른순위에 있더라도, 이미 다음검색어로 바뀐경우 다시 바꾸지않는다.
+	    					{
+		    					//해당 순위의 검색어를 다음 실시간 검색어로 바꿔준다.
+		    					add(words[temp.rank-1],temp.rank,wordNew(words[temp.rank-1],newWord));
+		    					temp = node(temp.rank);
+		    					temp.backward = temp.next.backward;
+		    					Node temp1 = remove(temp.rank+1);
+		    					addBackword(temp1,temp1.rank);
+		    					// 전에 있는  검색어가 어떤 랭크의 순위에 위치해 있는에 있는 
+		    					add(words[i],i+1,false);
+		    					Node temp3 = node(i+1);
+		    					temp3.backward = temp3.next.backward;
+		    					Node temp2 = remove(i+2);
+		    					temp1.changerank = temp3;
+		    					addBackword(temp2,temp2.rank);
+		    					words[i] = null;
+		    					while(true)
+		    					{
+		    						int t;
+		    						for(t=0;t<words.length;t++)
+		    						{
+		    							if(temp2.word.equals(words[t]))
+		    							{
+		    								add(words[t],t+1,false);
+		    								temp3 = node(t+1);
+		    								temp3.backward = temp3.next.backward;
+		    								temp2.changerank = temp3;
+		    								temp2 = remove(t+2);
+		    								addBackword(temp2,temp2.rank);
+		    								words[t] = null;
+		    								break;
+		    							}
+		    						}
+		    						if(t == words.length)
+		    						{
+		    							break;
+		    						}
+		    					}
+		    				}
+	    					else
+	    					{
+	    						add(words[temp.rank-1],temp.rank,wordNew(words[temp.rank-1],newWord));
+		    					temp = node(temp.rank);
+		    					temp.backward = temp.next.backward;
+		    					Node temp1 = remove(temp.rank+1);
+		    					addBackword(temp1,temp1.rank);
+		    					temp1.changerank = node(i+1);
+		    					words[i] = null;
+	    					}
+	    				}
+	    			}
+	    			if(i==words.length)//해당 순위 검색어가 새로들어온 검색어들중 없을 경우
+	    			{
+	    				add(words[temp.rank-1],temp.rank,wordNew(words[temp.rank-1],newWord));
+    					temp = node(temp.rank);
+    					temp.backward = temp.next.backward;
+    					temp.next.backward = null;
+    					Node temp1 = remove(temp.rank+1);
+    					addBackword(temp1,temp1.rank);	
+	    			}
+	    		}
     		}
-    		j++;
     		temp = temp.next;
     	}
     }
-    // 새로운 단어가 어니면 false, 맞으면 true
+	// 새로운 단어가 어니면 false, 맞으면 true
     public boolean wordNew(String word,String[] newWord)
     {
     	for(int i=0;i<newWord.length;i++)
