@@ -124,6 +124,27 @@ public class TimeValue {
 
 			return true; //time2값이 같거나 크면,true
 		}
-
+		public int timeDifference(TimeValue thing)
+		{
+			String temp1 = this.year + this.month + this.day + this.hour + this.min + this.sec;
+			String temp2 = thing.year + thing.month + thing.day + thing.hour + thing.min + thing.sec;
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+			try {
+				Date date1 = dateFormat.parse(temp1);
+				Date date2 = dateFormat.parse(temp2);
+				long time1 = date1.getTime();
+				long time2 = date2.getTime();
+				//System.out.println(time1 - time2);
+				if((time1 - time2)>0.00)
+				{
+					return (int)((time1-time2)/1000); 
+				}
+				return (int)((time2-time1)/1000); 
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+				return 0;	
+		}
 	}
 

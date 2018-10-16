@@ -10,45 +10,70 @@ import java.io.IOException;
 import java.util.Scanner;
 
 class Main {
-	
+
 	public static void main(String[] args) throws IOException {
-	LinkedList Link = new LinkedList();
-	TimeValue time = new TimeValue();
-	TimeValue startTime = new TimeValue();
-	TimeValue endTime = new TimeValue();
-	//파일을 열고, 처음 이면  기본형태를 만든다.
-	inputDate(time,startTime,endTime);
-	while(startTime.timeCompare(endTime) == false)
-	{
-		System.out.println("끝나는 날짜보다 시작날짜의 값이 큽니다. 다시입력해주세요.");
-		inputDate(time,startTime,endTime);
+		LinkedList Link = new LinkedList();
+		TimeValue time = new TimeValue();
+		TimeValue startTime = new TimeValue();
+		TimeValue endTime = new TimeValue();
+		// 파일을 열고, 처음 이면 기본형태를 만든다.
+		inputDate(time, startTime, endTime);
+		while (startTime.timeCompare(endTime) == false) {
+			System.out.println("끝나는 날짜보다 시작날짜의 값이 큽니다. 다시입력해주세요.");
+			inputDate(time, startTime, endTime);
+		}
+		String filename = "C:\\Users\\YungJae\\eclipse-workspace\\DS_Design\\" + startTime.year + startTime.month
+				+ startTime.day + startTime.hour + startTime.min + startTime.sec + "_" + endTime.year
+				+ endTime.month + endTime.day + endTime.hour + endTime.min + endTime.sec;
+		String filename2 = filename + "wordExisits.txt";
+		Crawling craw = new Crawling();
+		craw.startCrawling(time, startTime, endTime);
+
+		readFile(startTime, endTime, Link,filename);
+		System.out.println(Link.toSizeString());
+		
+		String[][] hotKeyWord = Link.showHotKeyWord(filename2);
+		System.out.println("~~가장 핫한 검색어들~~");
+		for(int i = 0 ;i<20;i++)
+		{
+			System.out.println((i+1) + " 위 :" + hotKeyWord[0][i]+ ", Score : "+ hotKeyWord[1][i]);
+		}
+		String[][] muchTimeWord = Link.showCountTime(filename2);
+		System.out.println("~~가장 많이 나온 검색어들~~");
+		for(int i = 0 ;i<20;i++)
+		{
+			System.out.println((i+1) + " 위 :" + muchTimeWord[0][i] + ", timeCount : " + muchTimeWord[1][i] );
+		}
+		String[][] myHotKeyWord = Link.showMyHotKeyWord(filename2,startTime.timeDifference(endTime)/(30*craw.flag));
+		System.out.println("~~나만의 핫이슈 검색어들~~");
+		for(int i = 0 ;i<20;i++)
+		{
+			System.out.println((i+1) + " 위 :" + myHotKeyWord[0][i] + ", Score : " +myHotKeyWord[1][i] );
+		}
+		Link.showWordImpormation(filename2, "동호");
 	}
-	Crawling craw = new Crawling();
-	craw.startCrawling(time,startTime,endTime);
-	
-	readFile(startTime,endTime,Link);
-}
-	//파일을 열어서 한라인씩 읽고, makeGraph로 그래프를 만든다.
-	public static String readFile(TimeValue startTime, TimeValue endTime,LinkedList Link) 
-	{
+
+	// 파일을 열어서 한라인씩 읽고, makeGraph로 그래프를 만든다.
+	public static String readFile(TimeValue startTime, TimeValue endTime, LinkedList Link,String filename) {
 		try {
-			File file = new File("C:\\Users\\YungJae\\eclipse-workspace\\DS_Design\\" + startTime.year+startTime.month+startTime.day+startTime.hour+startTime.min+startTime.sec + "_"+ endTime.year+endTime.month+endTime.day+endTime.hour+endTime.min+endTime.sec +".txt");
+			String filename2 = filename + "wordExisits.txt";
+			File file = new File(filename + ".txt");
 			FileReader fileReader = new FileReader(file);
 			BufferedReader bufReader = new BufferedReader(fileReader);
 			String line = "";
 			String[] newWord;
-			while((line =bufReader.readLine())!=null)
-			{
+			while ((line = bufReader.readLine()) != null) {
 				String[] words = line.split("/");
 				Link.makeInitialGraph(words);
-				newWord = wordExists(words,startTime,endTime);
-				while((line =bufReader.readLine())!=null)
-				{
+				newWord = wordExists(words, startTime, endTime);
+				while ((line = bufReader.readLine()) != null) {
 					words = line.split("/");
-					newWord = wordExists(words,startTime,endTime);
-					Link.makeGraph(words, newWord);
+					newWord = wordExists(words, startTime, endTime);
+					Link.makeGraph(words, newWord, filename2);
 				}
 			}
+			bufReader.close();
+			fileReader.close();
 
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -59,83 +84,99 @@ class Main {
 		}
 		return "";
 	}
-	//검색어중에서 해당가 처음 나온 단어라면, 텍스트에 저장한다.
-	public static String[] wordExists(String[] word,TimeValue startTime, TimeValue endTime)
-	{
-		String[] word_exists = (String[])word.clone();
-		int  index=0;
+
+	// 검색어중에서 해당가 처음 나온 단어라면, 텍스트에 저장한다.
+	public static String[] wordExists(String[] word, TimeValue startTime, TimeValue endTime) {
+		String[] word_exists = (String[]) word.clone();
+		int index = 0;
 		try {
-			File infile = new File("C:\\Users\\YungJae\\eclipse-workspace\\DS_Design\\" + startTime.year+startTime.month+startTime.day+startTime.hour+startTime.min+startTime.sec + "_"+ endTime.year+endTime.month+endTime.day+endTime.hour+endTime.min+endTime.sec +"wordExisits.txt");
-			if(infile.exists())
-			{
+			File infile = new File("C:\\Users\\YungJae\\eclipse-workspace\\DS_Design\\" + startTime.year
+					+ startTime.month + startTime.day + startTime.hour + startTime.min + startTime.sec + "_"
+					+ endTime.year + endTime.month + endTime.day + endTime.hour + endTime.min + endTime.sec
+					+ "wordExisits.txt");
+			if (infile.exists()) {
 				BufferedReader bufferedReader = new BufferedReader(new FileReader(infile));
 				String line = null;
-				while((line = bufferedReader.readLine()) != null)
-				{
+				while ((line = bufferedReader.readLine()) != null) {
 					String[] rankAndWord = line.split("/");
-					for(int i= 0; i<word.length-index; i++)
-					{
-						if(word_exists[i].contains(rankAndWord[1]))
-						{
-							if(word_exists[word.length -(index+1)].indexOf('/')!=-1)
-							{
-								word_exists[i] = word_exists[word.length -(index+1)];
-								word_exists[word.length -(index+1)] = null;
-								index++;
+					for (int i = 0; i < word.length - index; i++) {
+						if (word_exists[i].indexOf('/') != -1) {
+							String temp[] = word_exists[i].split("/");
+							if (temp[1].equals(rankAndWord[1])) {
+								if (word_exists[word.length - (index + 1)].indexOf('/') != -1) {
+									word_exists[i] = word_exists[word.length - (index + 1)];
+									word_exists[word.length - (index + 1)] = null;
+									index++;
+								} else {
+									word_exists[i] = (word.length - index) + "/"
+											+ word_exists[word.length - (index + 1)] + "";
+									word_exists[word.length - (index + 1)] = null;
+									index++;
+								}
+								break;
 							}
-							else
-							{
-								word_exists[i] = (word.length -index) +"/"+ word_exists[word.length -(index+1)] +"";
-								word_exists[word.length -(index+1)] = null;
-								index++;
+						} else {
+							if (word_exists[i].equals(rankAndWord[1])) {
+								if (word_exists[word.length - (index + 1)].indexOf('/') != -1) {
+									word_exists[i] = word_exists[word.length - (index + 1)];
+									word_exists[word.length - (index + 1)] = null;
+									index++;
+								} else {
+									word_exists[i] = (word.length - index) + "/"
+											+ word_exists[word.length - (index + 1)] + "";
+									word_exists[word.length - (index + 1)] = null;
+									index++;
+								}
+								break;
 							}
 						}
 					}
-					if(index==20)break;
+					if (index == 20)
+						break;
 				}
-			bufferedReader.close();
+				bufferedReader.close();
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//txt 파일에 쓰기
-		int j =0;
-		String[] temp = new String[word_exists.length -index];
+		// txt 파일에 쓰기
+		int j = 0;
+		String[] temp = new String[word_exists.length - index];
 		try {
-			File  outfile = new File("C:\\Users\\YungJae\\eclipse-workspace\\DS_Design\\" + startTime.year+startTime.month+startTime.day+startTime.hour+startTime.min+startTime.sec + "_"+ endTime.year+endTime.month+endTime.day+endTime.hour+endTime.min+endTime.sec +"wordExisits.txt");
-			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outfile,true));
-			while(j<word_exists.length - index) 
-			{
-				if(word_exists[j].indexOf("/")!=-1)
-				{
+			File outfile = new File("C:\\Users\\YungJae\\eclipse-workspace\\DS_Design\\" + startTime.year
+					+ startTime.month + startTime.day + startTime.hour + startTime.min + startTime.sec + "_"
+					+ endTime.year + endTime.month + endTime.day + endTime.hour + endTime.min + endTime.sec
+					+ "wordExisits.txt");
+			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outfile, true));
+			while (j < word_exists.length - index) {
+				if (word_exists[j].indexOf('/') != -1) {
 					temp[j] = word_exists[j];
 					bufferedWriter.write(word_exists[j]);
 					bufferedWriter.newLine();
-				}
-				else
-				{
-					temp[j] = word_exists[j];
-					bufferedWriter.write((j+1) + "/"+ word_exists[j]);
+				} else {
+					temp[j] = (j + 1)+"" + "/" + word_exists[j];
+					bufferedWriter.write((j + 1) + "/" + word_exists[j]);
 					bufferedWriter.newLine();
 
 				}
 				j++;
-				
+
 			}
 			bufferedWriter.close();
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return temp;
-		
+
 	}
-	public static void inputDate(TimeValue time, TimeValue startTime, TimeValue endTime) //시작 일자와 끝 일자를 입력받는 함수.
+	public static void inputDate(TimeValue time, TimeValue startTime, TimeValue endTime) // 시작 일자와 끝 일자를 입력받는 함수.
 	{
 		@SuppressWarnings("resource")
 		Scanner sc = new Scanner(System.in);
-		
+
 		System.out.println("실시간검색어 시작시간");
 		System.out.println("년도?");
 		startTime.year = sc.next();
@@ -147,13 +188,13 @@ class Main {
 		startTime.day = sc.next();
 		time.day = startTime.day;
 		System.out.println("시");
-		startTime.hour  = sc.next();
+		startTime.hour = sc.next();
 		time.hour = startTime.hour;
 		System.out.println("분");
-		startTime.min  = sc.next();
+		startTime.min = sc.next();
 		time.min = startTime.min;
 		System.out.println("초");
-		startTime.sec  = sc.next();
+		startTime.sec = sc.next();
 		time.sec = startTime.sec;
 		System.out.println("실시간검색어 끝나는시간");
 		System.out.println("년도?");
@@ -163,11 +204,11 @@ class Main {
 		System.out.println("일?");
 		endTime.day = sc.next();
 		System.out.println("시");
-		endTime.hour  = sc.next();
+		endTime.hour = sc.next();
 		System.out.println("분");
-		endTime.min  = sc.next();
+		endTime.min = sc.next();
 		System.out.println("초");
-		endTime.sec  = sc.next();
-		
+		endTime.sec = sc.next();
+
 	}
 }

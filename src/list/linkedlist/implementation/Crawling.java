@@ -15,7 +15,7 @@ import org.jsoup.select.Elements;
 class Crawling {
 	
 	private static String URL = "https://datalab.naver.com/keyword/realtimeList.naver?datetime=";
-	private static int flag = 20; //30초*20 , 즉 10분마다 크롤링한다. 값을 바꿔주면 몇분마다 크롤링할지 결정할수 있다.
+	public final int flag = 20; //30초*20 , 즉 10분마다 크롤링한다. 값을 바꿔주면 몇분마다 크롤링할지 결정할수 있다.
 	public Crawling(){}
 	
 	public void startCrawling(TimeValue time, TimeValue startTime, TimeValue endTime) throws IOException {	
